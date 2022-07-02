@@ -257,53 +257,18 @@ FallbackPollInterval controls how often clients should manually poll as a fallba
 :warning: **_ADVANCED_**: _Do not change these settings unless you know what you are doing._
 ```toml
 [Database.Lock]
-Mode = 'dual' # Default
-AdvisoryCheckInterval = '1s' # Default
-AdvisoryID = 1027321974924625846 # Default
 LeaseDuration = '10s' # Default
 LeaseRefreshInterval = '1s' # Default
 ```
 Ideally, you should use a container orchestration system like [Kubernetes](https://kubernetes.io/) to ensure that only one Chainlink node instance can ever use a specific Postgres database. However, some node operators do not have the technical capacity to do this. Common use cases run multiple Chainlink node instances in failover mode as recommended by our official documentation. The first instance takes a lock on the database and subsequent instances will wait trying to take this lock in case the first instance fails.
 
-By default, Chainlink nodes use the `dual` setting to provide both advisory locks and lease locks for backward and forward compatibility. Using advisory locks alone presents the following problems:
-
 - If your nodes or applications hold locks open for several hours or days, Postgres is unable to complete internal cleanup tasks. The Postgres maintainers explicitly discourage holding locks open for long periods of time.
-- Advisory locks can silently disappear when you upgrade Postgres, so a new Chainlink node instance can take over even while the old node is still running.
-- Advisory locks do not work well with pooling tools such as [pgbouncer](https://www.pgbouncer.org/).
-- If the Chainlink node crashes, an advisory lock can hang around for up to several hours, which might require you to manually remove it so another instance of the Chainlink node will allow itself to boot.
 
-Because of the complications with advisory locks, Chainlink nodes with v1.1.0 and later support a new `lease` locking mode. This mode might become the default in future. The `lease` locking mode works using the following process:
+Because of the complications with advisory locks, Chainlink nodes with v2.0 and later only support `lease` locking mode. The `lease` locking mode works using the following process:
 
 - Node A creates one row in the database with the client ID and updates it once per second.
 - Node B spinlocks and checks periodically to see if the client ID is too old. If the client ID is not updated after a period of time, node B assumes that node A failed and takes over. Node B becomes the owner of the row and updates the client ID once per second.
 - If node A comes back, it attempts to take out a lease, realizes that the database has been leased to another process, and exits the entire application immediately.
-
-### Mode<a id='Database-Lock-Mode'></a>
-```toml
-Mode = 'dual' # Default
-```
-Mode variable can be set to 'dual', 'advisorylock', 'lease', or 'none'. It controls which mode to use to enforce that only one Chainlink node can use the database. It is recommended to set this to `lease`.
-
-- `dual` - The default: Uses both advisory locks and lease locks for backward and forward compatibility
-- `advisorylock` - Advisory lock only
-- `lease` - Lease lock only
-- _none_ - No locking at all: This option useful for advanced deployment environments when you are sure that only one instance of a Chainlink node will ever be running.
-
-### AdvisoryCheckInterval<a id='Database-Lock-AdvisoryCheckInterval'></a>
-```toml
-AdvisoryCheckInterval = '1s' # Default
-```
-AdvisoryCheckInterval controls how often the Chainlink node checks to make sure it still holds the advisory lock when advisory locking is enabled. If a node no longer holds the lock, it will try to re-acquire it. If the node cannot re-acquire the lock, the application will exit.
-
-This setting applies only if `Mode` is set to enable advisory locking.
-
-### AdvisoryID<a id='Database-Lock-AdvisoryID'></a>
-```toml
-AdvisoryID = 1027321974924625846 # Default
-```
-AdvisoryID must match all other Chainlink nodes that might access this database. It is unlikely you will ever need to change this from the default.
-
-This setting applies only if `Mode` is set to enable advisory locking.
 
 ### LeaseDuration<a id='Database-Lock-LeaseDuration'></a>
 ```toml

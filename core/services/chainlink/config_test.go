@@ -12,6 +12,7 @@ import (
 	"github.com/kylelemons/godebug/diff"
 	"github.com/pelletier/go-toml/v2"
 	"github.com/shopspring/decimal"
+	ocrcommontypes "github.com/smartcontractkit/libocr/commontypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -203,11 +204,8 @@ func TestConfig_Marshal(t *testing.T) {
 			FallbackPollInterval: models.MustNewDuration(2 * time.Minute),
 		},
 		Lock: &config.DatabaseLock{
-			Mode:                  ptr("advisory"),
-			AdvisoryCheckInterval: models.MustNewDuration(5 * time.Minute),
-			AdvisoryID:            ptr[int64](345982730592843),
-			LeaseDuration:         &minute,
-			LeaseRefreshInterval:  &second,
+			LeaseDuration:        &minute,
+			LeaseRefreshInterval: &second,
 		},
 		Backup: &config.DatabaseBackup{
 			Dir:              ptr("test/backup/dir"),
@@ -312,11 +310,14 @@ func TestConfig_Marshal(t *testing.T) {
 			PeerstoreWriteInterval:           models.MustNewDuration(time.Minute),
 		},
 		V2: &config.P2PV2{
-			AnnounceAddresses:    &[]string{"a", "b", "c"},
-			DefaultBootstrappers: &[]string{"1", "2", "3"},
-			DeltaDial:            models.MustNewDuration(time.Minute),
-			DeltaReconcile:       models.MustNewDuration(time.Second),
-			ListenAddresses:      &[]string{"foo", "bar"},
+			AnnounceAddresses: &[]string{"a", "b", "c"},
+			DefaultBootstrappers: &[]ocrcommontypes.BootstrapperLocator{
+				{PeerID: "12D3KooWMoejJznyDuEk5aX6GvbjaG12UzeornPCBNzMRqdwrFJw", Addrs: []string{"foo:42", "bar:10"}},
+				{PeerID: "12D3KooWMoejJznyDuEk5aX6GvbjaG12UzeornPCBNzMRqdwrFJw", Addrs: []string{"test:99"}},
+			},
+			DeltaDial:       models.MustNewDuration(time.Minute),
+			DeltaReconcile:  models.MustNewDuration(time.Second),
+			ListenAddresses: &[]string{"foo", "bar"},
 		},
 	}
 	full.Keeper = &config.Keeper{
@@ -549,9 +550,6 @@ MinReconnectInterval = '5m0s'
 FallbackPollInterval = '2m0s'
 
 [Database.Lock]
-Mode = 'advisory'
-AdvisoryCheckInterval = '5m0s'
-AdvisoryID = 345982730592843
 LeaseDuration = '1m0s'
 LeaseRefreshInterval = '1s'
 `},
@@ -660,7 +658,7 @@ PeerstoreWriteInterval = '1m0s'
 
 [P2P.V2]
 AnnounceAddresses = ['a', 'b', 'c']
-DefaultBootstrappers = ['1', '2', '3']
+DefaultBootstrappers = ['12D3KooWMoejJznyDuEk5aX6GvbjaG12UzeornPCBNzMRqdwrFJw@foo:42/bar:10', '12D3KooWMoejJznyDuEk5aX6GvbjaG12UzeornPCBNzMRqdwrFJw@test:99']
 DeltaDial = '1m0s'
 DeltaReconcile = '1s'
 ListenAddresses = ['foo', 'bar']

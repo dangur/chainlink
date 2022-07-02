@@ -3,6 +3,7 @@ package v2
 import (
 	"net"
 
+	ocrcommontypes "github.com/smartcontractkit/libocr/commontypes"
 	ocrnetworking "github.com/smartcontractkit/libocr/networking"
 
 	"github.com/smartcontractkit/chainlink/core/config"
@@ -15,11 +16,11 @@ import (
 // Core holds the core configuration. See chainlink.Config for more information.
 type Core struct {
 	// General/misc
-	Dev                 *bool
+	Dev                 *bool //TODO back to env?
 	ExplorerURL         *models.URL
 	InsecureFastScrypt  *bool
-	ReaperExpiration    *models.Duration
-	RootDir             *string
+	ReaperExpiration    *models.Duration //TODO move to JobPipeline? w/ ReaperInterval, ReaperThreshold
+	RootDir             *string          //TODO back to env?
 	ShutdownGracePeriod *models.Duration
 
 	Feature *Feature
@@ -61,6 +62,7 @@ type Feature struct {
 	LogPoller          *bool
 	OffchainReporting2 *bool
 	OffchainReporting  *bool
+	//TODO UICSA?
 }
 
 type Database struct {
@@ -85,11 +87,8 @@ type DatabaseListener struct {
 }
 
 type DatabaseLock struct {
-	Mode                  *string
-	AdvisoryCheckInterval *models.Duration
-	AdvisoryID            *int64
-	LeaseDuration         *models.Duration
-	LeaseRefreshInterval  *models.Duration
+	LeaseDuration        *models.Duration
+	LeaseRefreshInterval *models.Duration
 }
 
 type DatabaseBackup struct {
@@ -221,7 +220,7 @@ type P2PV1 struct {
 	AnnounceIP                       *net.IP
 	AnnouncePort                     *uint16
 	BootstrapCheckInterval           *models.Duration
-	DefaultBootstrapPeers            *[]string
+	DefaultBootstrapPeers            *[]string //TODO typed?
 	DHTAnnouncementCounterUserPrefix *uint32
 	DHTLookupInterval                *int64
 	ListenIP                         *net.IP
@@ -232,11 +231,11 @@ type P2PV1 struct {
 }
 
 type P2PV2 struct {
-	AnnounceAddresses    *[]string
-	DefaultBootstrappers *[]string
+	AnnounceAddresses    *[]string //TODO typed?
+	DefaultBootstrappers *[]ocrcommontypes.BootstrapperLocator
 	DeltaDial            *models.Duration
 	DeltaReconcile       *models.Duration
-	ListenAddresses      *[]string
+	ListenAddresses      *[]string //TODO typed?
 }
 
 type Keeper struct {
@@ -255,7 +254,7 @@ type Keeper struct {
 }
 
 type AutoPprof struct {
-	Enabled              *bool
+	Enabled              *bool //TODO Disabled?
 	ProfileRoot          *string
 	PollInterval         *models.Duration
 	GatherDuration       *models.Duration

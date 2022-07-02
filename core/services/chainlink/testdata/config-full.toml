@@ -32,9 +32,6 @@ MinReconnectInterval = '5m0s'
 FallbackPollInterval = '2m0s'
 
 [Database.Lock]
-Mode = 'advisory'
-AdvisoryCheckInterval = '5m0s'
-AdvisoryID = 345982730592843
 LeaseDuration = '1m0s'
 LeaseRefreshInterval = '1s'
 
@@ -135,7 +132,7 @@ PeerstoreWriteInterval = '1m0s'
 
 [P2P.V2]
 AnnounceAddresses = ['a', 'b', 'c']
-DefaultBootstrappers = ['1', '2', '3']
+DefaultBootstrappers = ['12D3KooWMoejJznyDuEk5aX6GvbjaG12UzeornPCBNzMRqdwrFJw@foo:42/bar:10', '12D3KooWMoejJznyDuEk5aX6GvbjaG12UzeornPCBNzMRqdwrFJw@test:99']
 DeltaDial = '1m0s'
 DeltaReconcile = '1s'
 ListenAddresses = ['foo', 'bar']
